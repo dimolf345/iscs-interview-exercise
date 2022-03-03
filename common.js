@@ -2,6 +2,8 @@ const fs = require("fs");
 const prompt = require("prompt");
 
 class TextParser {
+  //TextParser create a table with columns(this.heads) and rows
+  //from a text file, using RegExp
   constructor(rawText) {
     console.log("Parsing text input...");
     this.lines = this.#parseLines(rawText);
@@ -11,6 +13,7 @@ class TextParser {
     console.log(`Found ${this.lines.length} lines`);
   }
 
+  //splits rawText in lines by finding newlines (\n)
   #parseLines(textString) {
     if (typeof textString !== "string") {
       throw new Error("Text parser accepts only strings as a variable");
@@ -20,6 +23,10 @@ class TextParser {
     return lines;
   }
 
+// #findHeadByKey searches for a specified key to use as a column. the key is
+ //searched as a word between space boundaries. functions returns
+ //the column name in the key property and the index of the first
+ //letter of the keySearch variable
   #findHeadByKey(lineText, keySearch) {
     let regex = new RegExp(`(?<=\\s|^)${keySearch}(?=\\s|$)`);
     const match = lineText.match(regex);
@@ -30,6 +37,10 @@ class TextParser {
     };
   }
 
+  //finds all the non space characters to use as column (heads). Used imperative
+  //approach for better performances. when the startK index finds non space
+  //chars the endK index finds the last letter of the word or the end of the
+  //lineText
   #findAllHead(lineText) {
     const heads = [];
     for (let startK = 0; startK < lineText.length; ) {
@@ -48,6 +59,9 @@ class TextParser {
     return heads;
   }
 
+//extractRowData creates an object for each linetext.
+//it searches for any non space chars looking immediately "below" the char
+// indexes of each column in this.heads
   #extractRowData(lineText, lineNum) {
     let regex = new RegExp("\\S+(?=\\s|$)", "g");
     let result = {
@@ -55,10 +69,14 @@ class TextParser {
       data: {},
     };
     for (let i = 0; i < this.heads.length; i++) {
+      //endsAt is set as the startsAt index of the next column or as the
+      //startsAt index plus the length of the column_key
       let endsAt =
         i < this.heads.length - 1
-          ? this.heads[i + 1].startsAt
+          ? this.heads[i + 1].startsAt -1
           : this.heads[i].startsAt + this.heads[i].key.length;
+      //parsed field is the substring immediately below the name of the column
+      //in the rawText
       const parsedField = lineText.slice(this.heads[i].startsAt - 1, endsAt+1);
       let match = parsedField.match(regex);
       if (!match) {
@@ -91,6 +109,9 @@ class TextParser {
     return selLine;
   }
 
+//setHeadFromLine reads the lineNum of the parsed text to find column keys.
+//if selected is not specified, it finds all the key with this.#findAllHead,
+//otherwise it will use this.#findHeadByKey
   setHeadFromLine(lineNum = 0, selectedFields = []) {
     const selectedLine = this.#checkLineNum(lineNum);
     if (!Array.isArray(selectedFields)) {
@@ -122,6 +143,9 @@ class TextParser {
   }
 }
 
+
+//getFileInputData opens a text file if specified, otherwise it will aks
+//input for file path. returns the text file as a string
 const getFileInputData = async (filename='') => {
   if(!filename) {
     console.log("Enter input file path:");
@@ -142,18 +166,3 @@ module.exports = {
   TextParser,
   getFileInputData,
 };
-
-// async function main() {
-//   try {
-//     const input = await getFileInputData();
-//     const parsedInput = new TextParser(input);
-//     parsedInput.setHeadFromLine(0, ["Dy", "MxT", "MnT"]);
-//     parsedInput.createRows();
-//     console.log(parsedInput.rows);
-//   } catch (error) {
-//     console.log(error);
-//     process.exit(1);
-//   }
-// }
-
-// main();
