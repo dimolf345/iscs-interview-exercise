@@ -43,6 +43,7 @@ async function main() {
   parsedInput.createRows();
   let teams = createTeamsArray(parsedInput)
   let result = getMinGoalDiff(teams)
+  console.log('Solution is:  ', result);
 }
 
 main();

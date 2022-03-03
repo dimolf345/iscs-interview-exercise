@@ -69,6 +69,7 @@ async function main() {
   parsedInput.createRows();
   let weatherDays = createWeaterDays(parsedInput)
   let result = getMinExcursionDay(weatherDays);
+  console.log('Solution is:  ', result);
 }
 
 main();
